@@ -1,0 +1,12 @@
+[Unit]
+Description=WiFi Monitoring Service
+After=network.target
+
+[Service]
+ExecStart=python /home/orangepi/wifi_manager/app.py
+Restart=always
+User=root
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
