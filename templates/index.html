@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wi-Fi Connect</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+</head>
+<body onload="fetchNetworks(); fetchStatus();">
+    <div class="container">
+        <h1>Wi-Fi Connect</h1>
+        <p id="status"></p>
+        <select id="networks" onchange="document.getElementById('ssid').value = this.value"></select>
+        <button id="rescan" onclick="fetchNetworks(true)">Rescan</button>
+        <input type="text" id="ssid" placeholder="Enter SSID">
+        <input type="password" id="password" placeholder="Enter password">
+        <button onclick="connectNetwork()">Connect</button>
+    </div>
+</body>
+</html>
