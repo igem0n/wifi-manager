@@ -5,7 +5,9 @@ async function fetchNetworks(forceRescan = false) {
         rescanButton.disabled = true;
         networkList.disabled = true;
     }
-    const response = await fetch(forceRescan ? '/rescan' : '/available');
+    const response = await fetch(forceRescan ? '/wifi/rescan' : '/wifi/available',
+        { method: forceRescan ? 'POST' : 'GET' }
+    );
     if(!response.ok) {
         rescanButton.disabled = false;
         networkList.disabled = false;
@@ -24,7 +26,7 @@ async function fetchNetworks(forceRescan = false) {
 }
 
 async function fetchStatus() {
-    const response = await fetch('/status');
+    const response = await fetch('/wifi/status');
     if(!response.ok) {
         return;
     }
@@ -44,15 +46,17 @@ async function fetchStatus() {
 async function connectNetwork() {
     const ssid = document.getElementById('ssid').value;
     const password = document.getElementById('password').value;
+    const connect = document.getElementById('connect');
+    connect.disabled = true;
 
-    const response = await fetch('/connect', {
+    const response = await fetch('/wifi/connect', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ ssid, password }),
     });
-
+    connect.disabled = false;
     alert(response.ok ? "ok" : "fail");
 }
 

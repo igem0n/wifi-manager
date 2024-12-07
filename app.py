@@ -7,17 +7,17 @@ app = Flask(__name__)
 # Bootstrap(app)
 wifi = wifi_manager.WifiManager("wlan0", "192.168.42.1")
 
-@app.get("/available")
+@app.get("/wifi/available")
 def get_wifi_networks():
     """Return the cached Wi-Fi networks and signal levels."""
     return jsonify({"networks" : wifi.wifi_networks})
 
-@app.get("/rescan")
+@app.post("/wifi/rescan")
 def rescan_wifi_networks():
     """Forces scan of Wi-Fi networks and signal levels."""
     return jsonify({"networks" : wifi.rescan_networks()})
 
-@app.get("/status")
+@app.get("/wifi/status")
 def get_wifi_status():
     """Return the cached Wi-Fi active connection status."""
     return jsonify({
@@ -25,7 +25,7 @@ def get_wifi_status():
         "hotspot" : wifi.hotspot_mode
     })
 
-@app.post("/connect")
+@app.post("/wifi/connect")
 def post_connect_to_wifi():
     data = request.get_json()
     ssid = data.get('ssid')

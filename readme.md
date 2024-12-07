@@ -1,15 +1,16 @@
 # Wi-Fi Manager Service 
-This Python-based service monitors Wi-Fi networks using `nmcli`, manages Wi-Fi connections, and can switch to hotspot mode if no network is available. It also exposes a simple API for fetching available networks and forcing connections via HTTP requests.
+This Python-based service monitors Wi-Fi connection status with `nmcli`, and can switch to hotspot mode if no network is available. It also exposes a simple API for fetching available networks and forcing connections via HTTP requests.
 ## Features 
  
 - Monitor available Wi-Fi networks using `nmcli`.
 
-- Switch to hotspot mode when no network is connected.
+- Switch to hotspot mode when no network is connected and back if connection can be reestablished.
  
 - Expose a REST API to: 
-  - Get available networks (`GET /wifi-networks`).
- 
-  - Force a connection to a specified network (`POST /connect`).
+  - Get available networks (`GET /wifi/available`).
+  - Get actual connection status (`GET /wifi/status`)
+  - Force networks available networks rescan (`POST /wifi/rescan`).
+  - Force a connection to a specified network (`POST /wifi/connect`).
 
 ## Requirements 
  
@@ -31,38 +32,15 @@ Install necessary dependencies using the following commands:
 ```bash
 # Install Python 3 and pip if not installed
 sudo apt update
-sudo apt install python3 python3-pip
-
-# Install required Python packages
-pip3 install Flask
+sudo apt install python3 python3-pip libsystemd-dev
 
 # Install NetworkManager (nmcli), isc-dhcp-server, and hostapd
 sudo apt install network-manager isc-dhcp-server hostapd
-```
 
-### Enabling Required Daemons 
+# Install required Python packages
+. .venv/bin/activate
+pip3 install requirements.txt
 
-Make sure that the following services are enabled and running on your system:
- 
-1. **NetworkManager** : This service is required for `nmcli` to manage network connections.
-
-```bash
-sudo systemctl enable NetworkManager
-sudo systemctl start NetworkManager
-```
- 
-2. **isc-dhcp-server** : This service provides DHCP when in hotspot mode.
-
-```bash
-sudo systemctl enable isc-dhcp-server
-sudo systemctl start isc-dhcp-server
-```
- 
-3. **hostapd** : This service is used to create a Wi-Fi hotspot when switching to hotspot mode.
-
-```bash
-sudo systemctl enable hostapd
-sudo systemctl start hostapd
 ```
 
 ## Installing the Wi-Fi Manager Service 
@@ -73,7 +51,7 @@ Clone the repository to your desired directory:
 
 
 ```bash
-git clone https://github.com/yourusername/wifi-manager.git
+git clone git@github.com:igem0n/wifi-manager.git
 cd wifi-manager
 ```
 
@@ -115,12 +93,6 @@ WantedBy=multi-user.target
 sudo systemctl daemon-reload
 ```
  
-4. Enable and start the Wi-Fi manager service:
-
-
-```bash
-sudo systemctl enable wifi-manager
-sudo systemctl start wifi-manager
 ```
 4. Configure `hostapd` and `isc-dhcp-server`In case you want to use the system as a hotspot, you need to configure `hostapd` and `isc-dhcp-server`: 
 1. **hostapd Configuration** : Configure `hostapd` to create a Wi-Fi access point.Edit the `/etc/hostapd/hostapd.conf` file:

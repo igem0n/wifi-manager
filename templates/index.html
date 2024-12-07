@@ -14,8 +14,8 @@
         <select id="networks" onchange="document.getElementById('ssid').value = this.value"></select>
         <button id="rescan" onclick="fetchNetworks(true)">Rescan</button>
         <input type="text" id="ssid" placeholder="Enter SSID">
-        <input type="password" id="password" placeholder="Enter password">
-        <button onclick="connectNetwork()">Connect</button>
+        <input type="text" id="password" placeholder="Enter password">
+        <button id="connect" onclick="connectNetwork()">Connect</button>
     </div>
 </body>
 </html>

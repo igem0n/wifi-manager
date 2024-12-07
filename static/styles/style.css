@@ -73,6 +73,13 @@ button#rescan:active {
     background-color: #1e7e34;
 }
 
+button:disabled {
+    background-color: #ccc; /* Light gray background for disabled buttons */
+    color: #777; /* Dimmed text color */
+    cursor: not-allowed; /* Show "not allowed" cursor */
+    opacity: 0.6; /* Slight transparency for visual effect */
+}
+
 input[type="text"], input[type="password"] {
     text-align: left;
 }
