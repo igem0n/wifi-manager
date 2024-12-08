@@ -13,14 +13,18 @@ class WifiManager:
         self._manage_lock = Lock()
         self._stop_event = Event()
         self._worker = Thread(target=self._manage_loop)
+        journal.send("wifi manager created for interface " + interface + " and hotspot gateway " + hotspot_ip)
         
     def __del__(self):
         self.stop()
+        journal.send("wifi manager destroyed")
 
     def start(self):
+        journal.send("wifi manager thread start")
         self._worker.start()
 
     def stop(self):
+        journal.send("wifi manager thread stop")
         if self._worker.is_alive():
             self._stop_event.set()
             self._worker.join()

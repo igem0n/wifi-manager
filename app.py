@@ -1,11 +1,29 @@
 from werkzeug.exceptions import HTTPException
-import wifi_manager
-from systemd import journal
+from  wifi_manager import WifiManager
+import configparser, os
 from flask import Flask, request, jsonify, abort, json, render_template
 
 app = Flask(__name__)
-# Bootstrap(app)
-wifi = wifi_manager.WifiManager("wlan0", "192.168.42.1")
+default_config = {
+    "DEFAULT": {
+        "interface": "wlan0",
+        "gateway": "192.168.10.1",
+        "port": "5000"
+    }
+}
+
+def readConfig():
+    config_path = os.getenv("WIFI_MANAGER_CONFING", "/etc/wifi-manager/wifi-manager.conf")
+    parser = configparser.ConfigParser()
+    parser.read_dict(default_config)
+    parser.read(config_path)
+    interface = parser["DEFAULT"]["interface"]
+    gateway = parser["DEFAULT"]["gateway"]
+    port = parser["DEFAULT"]["port"]
+    return {"interface" : interface, "gateway" : gateway, "port" : port}
+
+
+wifi : WifiManager
 
 @app.get("/wifi/available")
 def get_wifi_networks():
@@ -54,11 +72,12 @@ def ssid_login():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    journal.send("application start")
     try:
+        app_config = readConfig()
+        wifi = WifiManager(app_config["interface"], app_config["gateway"])
         wifi.start()
-        app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
-        # signal.pause()
+        app.run(host="0.0.0.0", port=app_config["port"], use_reloader=False)
     finally:
-        wifi.stop()
-        journal.send("application stop")
+        if wifi:
+            wifi.stop()
+        

@@ -44,7 +44,26 @@ git clone git@github.com:igem0n/wifi-manager.git
 cd wifi-manager
 ```
 
-### 2. Install dependencies 
+### 2. Wi-Fi manager configuration 
+Create a config file for our service to let it know which network device it should use, which ip address will be used for hotspot dhcp and which port listen for API and webpage. 
+
+- Create new  directory `/etc/wifi-manager/` and config file `wifi-manager.conf` in it:
+
+```bash
+sudo mkdir /etc/wifi-manager
+sudo nano /etc/wifi-manager/wifi-manager.conf
+```
+
+- Paste the following configuration into the file replacing values with yours:
+
+```ini
+[DEFAULT]
+interface=wlan0
+gateway=192.168.10.1
+port=5000
+```
+
+### 3. Install dependencies 
 
 Install necessary dependencies using the following commands:
 
@@ -63,7 +82,7 @@ pip install -r requirements.txt
 
 ```
 
-### 3. Set Up the Systemd Service 
+### 4. Set Up the Systemd Service 
 Create a `systemd` service unit file to manage the Wi-Fi manager service. 
 - Create a new `wifi-manager.service` file in `/etc/systemd/system/`:
 
@@ -82,7 +101,7 @@ After=network.target
 ExecStart=/home/orangepi/wifi_manager/.venv/bin/python /home/orangepi/wifi_manager/app.py
 Restart=always
 KillMode=control-group
-KillSignal=SIGTERM
+KillSignal=SIGINT
 TimeoutStopSec=10
 User=root
 Group=root
@@ -100,7 +119,7 @@ WantedBy=multi-user.target
 sudo systemctl daemon-reload
 ```
  
-### 4. Hostapd service configuration
+### 5. Hostapd service configuration
 
 Configure `hostapd` to create a Wi-Fi access point:
 - Edit the `/etc/hostapd/hostapd.conf` file:
@@ -141,7 +160,7 @@ sudo nano /etc/default/hostapd
 DAEMON_CONF="/etc/hostapd/hostapd.conf"
 ```
  
-### 5. DHCP service configuration 
+### 6. DHCP service configuration 
 Configure `isc-dhcp-server` to assign IP addresses in hotspot mode.
 - Edit the `/etc/dhcp/dhcpd.conf` file:
 
@@ -153,10 +172,10 @@ Example configuration, **router ip should be set identical with our wifi service
 
 ```ini
 authoritative;
-subnet 192.168.42.0 netmask 255.255.255.0 {
-        range 192.168.42.10 192.168.42.50;
-        option broadcast-address 192.168.42.255;
-        option routers 192.168.42.1;
+subnet 192.168.10.0 netmask 255.255.255.0 {
+        range 192.168.10.10 192.168.10.50;
+        option broadcast-address 192.168.10.255;
+        option routers 192.168.10.1;
         default-lease-time 600;
         max-lease-time 7200;
         option domain-name "local";
@@ -175,7 +194,7 @@ INTERFACESv4="wlan0"
 INTERFACESv6=""
 ```
 
-### 6. Manually check the set up
+### 7. Manually check the set up
 Run the following commands to make sure that hotspot runs correctly and NetworkManager is able to reconnect after being restarted.
 
 - List Wi-Fi networks, make sure you see your usual Wi-Fi's there:
@@ -194,7 +213,7 @@ sudo nmcli -t -f NAME,DEVICE con show --active
 
 ```bash
 sudo systemctl stop NetworkManager.service
-sudo ifconfig wlan0 192.168.42.1
+sudo ifconfig wlan0 192.168.10.1
 sudo systemctl start isc-dhcp-server.service
 sudo systemctl start hostapd.service
 ```
@@ -212,7 +231,7 @@ sudo systemctl stop isc-dhcp-server.service
 sudo systemctl start NetworkManager.service
 ```
 
-### 7. Run and test Wi-Fi manager service
+### 8. Run and test Wi-Fi manager service
 If previous steps worked, try to run our service and test if it's functioning using API and compare results to commands output from previous step.
 
 - Start service:
