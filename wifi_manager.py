@@ -100,6 +100,9 @@ class WifiManager:
     def _manage_loop(self):
         journal.send("Wifi management loop started")
         self._enterNormalMode()
+        if self._stop_event.wait(60):
+            journal.send("Wifi management loop finished")
+            return
         self._wifi_networks = cli_tools.scan_wifi_networks()
         self._active_connections = cli_tools.get_active_wifi_connections(self._interface)
         while not self._stop_event.wait(self._manage_loop_interval()):
