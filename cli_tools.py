@@ -1,10 +1,12 @@
 import subprocess, re
+from systemd import journal
 
 mac_address_regex = re.compile(r'(?:[0-9a-fA-F]:?){12}')
 
 def run_command(command):
     """Run a shell command and return the output."""
-    return subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True).stdout.strip()
+    proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+    return proc.stdout.strip()
 
 def start_service(service_name : str):
     run_command(["systemctl", "start", service_name + ".service"])
@@ -45,5 +47,5 @@ def connect_to_wifi_netowrk(ssid : str, password : str):
     try:
         run_command(["nmcli", "device", "wifi", "connect", ssid, "password", password])
         return True
-    except Exception:
+    except Exception as e:
         return False

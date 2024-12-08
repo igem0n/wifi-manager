@@ -28,17 +28,26 @@ class WifiManager:
     def connect_to_wifi(self, ssid : str, password : str):
         with self._manage_lock:
             hotspot_mode = self._hotspot_mode
-            if self._hotspot_mode: self.enterNormalMode()
+            if self._hotspot_mode: 
+                self._enterNormalMode()
+                time.sleep(1)
+                self._wifi_networks = cli_tools.scan_wifi_networks()
+            journal.send("connect attempt " + ssid + " " + password)
             result = cli_tools.connect_to_wifi_netowrk(ssid, password)
-            if hotspot_mode and not result: self.enterHotspotMode()
+            if result: journal.send("connect result ok")
+            else: journal.send("connect result fail")
+            if hotspot_mode and not result: self._enterHotspotMode()
             return result
         
     def rescan_networks(self):
+        journal.send("rescan requested")
         with self._manage_lock:
             hotspot_mode = self._hotspot_mode
-            if self._hotspot_mode: self.enterNormalMode()
+            if self._hotspot_mode: 
+                journal.send("switch from hotspot to normal before scan")
+                self._enterNormalMode()
             self._wifi_networks = cli_tools.scan_wifi_networks()
-            if hotspot_mode: self.enterHotspotMode()
+            if hotspot_mode: self._enterHotspotMode()
         return self._wifi_networks
 
     @property
@@ -67,10 +76,10 @@ class WifiManager:
         self._hotspot_mode = False
     
     def _manage_loop_interval(self):
-        if self._hotspot_mode: return 60
+        if self._hotspot_mode: return 300
         else:
-            if self._active_connections: return 15
-            else: return 5
+            if self._active_connections: return 60
+            else: return 15
     
     def _manageHotspot(self):
         if cli_tools.get_connected_host_ap_clients():
