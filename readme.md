@@ -1,9 +1,9 @@
 # Wi-Fi Manager Service 
-This background service was designed for home linux-based headless servers connected to the local network over Wi-Fi and it allows to avoid the hassle with resetting Wi-Fi if somewhing was changed. Just connect to the automatically raised hotspot and send new network SSID and password with simple web interface.
+This background service was designed for home linux-based headless servers connected to the local network over Wi-Fi and it allows to avoid a hassle with resetting Wi-Fi if somewhing was changed. Just connect to the automatically raised hotspot and send new network SSID and password with a simple web interface.
 ### How it works 
 The service monitors Wi-Fi connection status with `nmcli` and if there is no active one, it stops `NetworkManager` service, manually sets static IP for wlan interface using `ifconfig`, starts `isc-dhcp-server` and finally starts `hostapd`.
 ### What if my WiFi recovers back?
-Even being in hotspot mode, service periodically swithes back to NetworkManager controlled state and rescans networks. If some of known Wi-Fi's is found, it will connect to it. Be aware that periodic recheck is disabled if someone is connected to the hotspot.
+Even being in hotspot mode, service periodically swithes back to the NetworkManager controlled state and rescans networks. If any known Wi-Fi is found, it will reconnect to it. Be aware that periodic recheck is disabled if someone is connected to the hotspot.
 
 ## Features 
  
@@ -11,7 +11,7 @@ Even being in hotspot mode, service periodically swithes back to NetworkManager 
 
 - Automatic switch to hotspot mode when there is no known Wi-FI network and periodic rescan and reconnect attempt if any is available again.
 
-- Simple web page to see the current status and reconnect to another wifi network
+- Simple web page to see the current status and reconnect to another Wi-Fi network
  
 - REST API to: 
   - Get available networks (`GET /wifi/available`).
@@ -44,7 +44,7 @@ git clone git@github.com:igem0n/wifi-manager.git
 cd wifi-manager
 ```
 
-### 2. Installing Dependencies 
+### 2. Install dependencies 
 
 Install necessary dependencies using the following commands:
 
