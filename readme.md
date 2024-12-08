@@ -4,7 +4,9 @@ This Python-based service monitors Wi-Fi connection status with `nmcli`, and can
  
 - Monitor available Wi-Fi networks using `nmcli`.
 
-- Switch to hotspot mode when no network is connected and back if connection can be reestablished.
+- Automatic switch to hotspot mode when there is no known wifi network and periodic rescan and reconnect attempt if any is available again.
+
+- Simple web page to see the current status and reconnect to another wifi network
  
 - Expose a REST API to: 
   - Get available networks (`GET /wifi/available`).
@@ -24,7 +26,18 @@ This Python-based service monitors Wi-Fi connection status with `nmcli`, and can
  
 5. **hostapd**  (for creating a Wi-Fi hotspot)
 
-### Installing Dependencies 
+## Installing the Wi-Fi Manager Service 
+
+### 1. Clone the Repository 
+
+Clone the repository to your desired directory:
+
+```bash
+git clone git@github.com:igem0n/wifi-manager.git
+cd wifi-manager
+```
+
+### 2. Installing Dependencies 
 
 Install necessary dependencies using the following commands:
 
@@ -39,24 +52,10 @@ sudo apt install network-manager isc-dhcp-server hostapd
 
 # Install required Python packages
 . .venv/bin/activate
-pip3 install requirements.txt
+pip install -r requirements.txt
 
 ```
 
-## Installing the Wi-Fi Manager Service 
-
-### 1. Clone the Repository 
-
-Clone the repository to your desired directory:
-
-
-```bash
-git clone git@github.com:igem0n/wifi-manager.git
-cd wifi-manager
-```
-
-### 2. Create the Python Script 
-Create a new Python script (`wifi_manager.py`) in the directory and paste the Python code provided in the earlier response.
 ### 3. Set Up the Systemd Service 
 Create a `systemd` service unit file to manage the Wi-Fi manager service. 
 1. Create a new `wifi-manager.service` file in `/etc/systemd/system/`:
@@ -93,25 +92,35 @@ WantedBy=multi-user.target
 sudo systemctl daemon-reload
 ```
  
-```
-4. Configure `hostapd` and `isc-dhcp-server`In case you want to use the system as a hotspot, you need to configure `hostapd` and `isc-dhcp-server`: 
-1. **hostapd Configuration** : Configure `hostapd` to create a Wi-Fi access point.Edit the `/etc/hostapd/hostapd.conf` file:
+### 3. Set up hotspot services 
+Configure `hostapd` and `isc-dhcp-server`
+
+1. **hostapd Configuration** : Configure `hostapd` to create a Wi-Fi access point.
+Edit the `/etc/hostapd/hostapd.conf` file:
 
 ```bash
 sudo nano /etc/hostapd/hostapd.conf
 ```
 
-Example configuration:
+Example configuration, **interface should be set identical with our wifi service config**:
 
 
 ```ini
 interface=wlan0
 driver=nl80211
-ssid=MyHotspot
+country_code=XX
 hw_mode=g
-channel=6
+channel=7
+ssid=MyAccessPoint
 wpa=2
-wpa_passphrase=MyHotspotPassword
+auth_algs=1
+wpa_passphrase=12345678
+wpa_key_mgmt=WPA-PSK
+rsn_pairwise=CCMP
+wpa_pairwise=CCMP
+wmm_enabled=1
+ctrl_interface=/var/run/hostapd
+ctrl_interface_group=0
 ```
 Update `/etc/default/hostapd` to point to the config file:
 
@@ -121,8 +130,7 @@ sudo nano /etc/default/hostapd
 
 Add or modify this line:
 
-
-```bash
+```ini
 DAEMON_CONF="/etc/hostapd/hostapd.conf"
 ```
  
@@ -132,14 +140,18 @@ DAEMON_CONF="/etc/hostapd/hostapd.conf"
 sudo nano /etc/dhcp/dhcpd.conf
 ```
 
-Example configuration:
-
+Example configuration, **router ip should be set identical with our wifi service config**:
 
 ```ini
+authoritative;
 subnet 192.168.42.0 netmask 255.255.255.0 {
-    range 192.168.42.10 192.168.42.50;
-    option domain-name-servers 8.8.8.8;
-    option routers 192.168.42.1;
+        range 192.168.42.10 192.168.42.50;
+        option broadcast-address 192.168.42.255;
+        option routers 192.168.42.1;
+        default-lease-time 600;
+        max-lease-time 7200;
+        option domain-name "local";
+        option domain-name-servers 8.8.8.8, 8.8.4.4;
 }
 ```
 Edit the `/etc/default/isc-dhcp-server` to specify the interface:
@@ -147,52 +159,9 @@ Edit the `/etc/default/isc-dhcp-server` to specify the interface:
 ```bash
 sudo nano /etc/default/isc-dhcp-server
 ```
-Set the `INTERFACES` variable:
+Set the `INTERFACES` variable, **it should be set identical with our wifi service config**:
 
 ```bash
-INTERFACES="wlan0"
+INTERFACESv4="wlan0"
+INTERFACESv6=""
 ```
- 
-3. Restart the services:
-
-
-```bash
-sudo systemctl restart hostapd
-sudo systemctl restart isc-dhcp-server
-```
-
-## Using the Wi-Fi Manager Service 
-
-Once the service is running, you can interact with the Wi-Fi Manager API:
-
-### 1. Get Available Networks 
-To get a list of available Wi-Fi networks, send a `GET` request to the `/wifi-networks` endpoint:
-
-```bash
-curl http://localhost:5000/wifi-networks
-```
-
-### 2. Force Connect to a Network 
-To attempt connecting to a specific Wi-Fi network, send a `POST` request with the SSID and password to the `/connect` endpoint:
-
-```bash
-curl -X POST -H "Content-Type: application/json" -d '{"ssid":"YourSSID","password":"YourPassword"}' http://localhost:5000/connect
-```
-
-
----
-
-
-## Troubleshooting 
- 
-- **Service not starting** : Check the `systemd` service logs for errors:
-
-```bash
-sudo journalctl -u wifi-manager
-```
- 
-- **Wi-Fi connection issues** : Check the `nmcli` output to debug Wi-Fi issues.
- 
-- **Hotspot not working** : Ensure that `hostapd` and `isc-dhcp-server` are properly configured and running.
-
-

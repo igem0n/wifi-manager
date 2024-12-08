@@ -3,7 +3,7 @@ Description=WiFi Monitoring Service
 After=network.target
 
 [Service]
-ExecStart=python /home/orangepi/wifi_manager/app.py
+ExecStart=python /home/orangepi/wifi-manager/app.py
 Restart=always
 KillMode=control-group
 KillSignal=SIGTERM
