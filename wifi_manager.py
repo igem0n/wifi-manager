@@ -104,7 +104,9 @@ class WifiManager:
         self._active_connections = cli_tools.get_active_wifi_connections(self._interface)
         while not self._stop_event.wait(self._manage_loop_interval()):
             with self._manage_lock:
-                if self._hotspot_mode: self._manageHotspot()
-                else: self._manageNormal()
+                if self._hotspot_mode: 
+                    self._manageHotspot()
+                else: 
+                    self._manageNormal()
         journal.send("Wifi management loop finished")
                 

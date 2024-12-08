@@ -25,6 +25,17 @@ def readConfig():
 
 wifi : WifiManager
 
+app_config = readConfig()
+wifi = WifiManager(app_config["interface"], app_config["gateway"])
+wifi.start()
+    
+@app.teardown_appcontext
+def cleanup(exception=None):
+    """Stop the wifi thread when the app shuts down."""
+    if wifi:
+        wifi.stop()
+
+
 @app.get("/wifi/available")
 def get_wifi_networks():
     """Return the cached Wi-Fi networks and signal levels."""
@@ -70,14 +81,3 @@ def handle_exception(e):
 @app.get('/')
 def ssid_login():
     return render_template('index.html')
-
-if __name__ == "__main__":
-    try:
-        app_config = readConfig()
-        wifi = WifiManager(app_config["interface"], app_config["gateway"])
-        wifi.start()
-        app.run(host="0.0.0.0", port=app_config["port"], use_reloader=False)
-    finally:
-        if wifi:
-            wifi.stop()
-        
