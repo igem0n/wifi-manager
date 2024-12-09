@@ -98,10 +98,10 @@ Description=WiFi Monitoring Service
 After=network.target
 
 [Service]
-ExecStart=/home/orangepi/wifi_manager/.venv/bin/python /home/orangepi/wifi_manager/app.py
-Restart=always
+WorkingDirectory=/home/orangepi/wifi_manager
+ExecStart=/home/orangepi/wifi_manager/.venv/bin/gunicorn -c wifi_manager_conf.py app:app
 KillMode=control-group
-KillSignal=SIGINT
+KillSignal=SIGTERM
 TimeoutStopSec=10
 User=root
 Group=root

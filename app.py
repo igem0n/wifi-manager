@@ -1,30 +1,12 @@
 from werkzeug.exceptions import HTTPException
 from  wifi_manager import WifiManager
-import configparser, os
 from flask import Flask, request, jsonify, abort, json, render_template
-
-default_config = {
-    "DEFAULT": {
-        "interface": "wlan0",
-        "gateway": "192.168.10.1",
-        "port": "5000"
-    }
-}
-
-def readConfig():
-    config_path = os.getenv("WIFI_MANAGER_CONFING", "/etc/wifi-manager/wifi-manager.conf")
-    parser = configparser.ConfigParser()
-    parser.read_dict(default_config)
-    parser.read(config_path)
-    interface = parser["DEFAULT"]["interface"]
-    gateway = parser["DEFAULT"]["gateway"]
-    port = parser["DEFAULT"]["port"]
-    return {"interface" : interface, "gateway" : gateway, "port" : port}
+from wifi_manager_conf import wifi_manager_config
+import atexit
 
 def create_app():
     app = Flask(__name__)
-    app_config = readConfig()
-    wifi = WifiManager(app_config["interface"], app_config["gateway"])
+    wifi = WifiManager(wifi_manager_config["interface"], wifi_manager_config["gateway"])
 
     @app.get("/wifi/available")
     def get_wifi_networks():
@@ -71,7 +53,11 @@ def create_app():
     @app.get('/')
     def ssid_login():
         return render_template('index.html')
+    
+    def stopWifiManager():
+        wifi.stop()
 
+    atexit.register(stopWifiManager)
     wifi.start()
 
     return app
