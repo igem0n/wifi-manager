@@ -12,7 +12,7 @@ class WifiManager:
         self._hotspot_ip = hotspot_ip
         self._manage_lock = Lock()
         self._stop_event = Event()
-        self._worker = Thread(target=self._manage_loop)
+        self._worker = Thread(target=self._manage_loop, daemon=True)
         journal.send("wifi manager created for interface " + interface + " and hotspot gateway " + hotspot_ip)
         
     def __del__(self):
@@ -107,7 +107,9 @@ class WifiManager:
         self._active_connections = cli_tools.get_active_wifi_connections(self._interface)
         while not self._stop_event.wait(self._manage_loop_interval()):
             with self._manage_lock:
-                if self._hotspot_mode: self._manageHotspot()
-                else: self._manageNormal()
+                if self._hotspot_mode: 
+                    self._manageHotspot()
+                else: 
+                    self._manageNormal()
         journal.send("Wifi management loop finished")
                 
