@@ -60,4 +60,9 @@ async function connectNetwork() {
     alert(response.ok ? "ok" : "fail");
 }
 
-setInterval(fetchStatus, 5000);
+function fetchAll() {
+    fetchNetworks();
+    fetchStatus();
+}
+
+setInterval(fetchAll, 5000);

@@ -79,11 +79,14 @@ class WifiManager:
         cli_tools.start_service("NetworkManager")
         self._hotspot_mode = False
     
-    def _manage_loop_interval(self):
-        if self._hotspot_mode: return 300
+    def _manage_loop_interval(self, first):
+        if self._hotspot_mode: 
+            return 300
         else:
-            if self._active_connections: return 60
-            else: return 15
+            if self._active_connections or first: 
+                return 60
+            else: 
+                return 15
     
     def _manageHotspot(self):
         if cli_tools.get_connected_host_ap_clients():
@@ -100,12 +103,11 @@ class WifiManager:
     def _manage_loop(self):
         journal.send("Wifi management loop started")
         self._enterNormalMode()
-        if self._stop_event.wait(60):
-            journal.send("Wifi management loop finished")
-            return
         self._wifi_networks = cli_tools.scan_wifi_networks()
         self._active_connections = cli_tools.get_active_wifi_connections(self._interface)
-        while not self._stop_event.wait(self._manage_loop_interval()):
+        first = True
+        while not self._stop_event.wait(self._manage_loop_interval(first)):
+            first = False
             with self._manage_lock:
                 if self._hotspot_mode: 
                     self._manageHotspot()
