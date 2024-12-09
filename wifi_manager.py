@@ -12,7 +12,7 @@ class WifiManager:
         self._hotspot_ip = hotspot_ip
         self._manage_lock = Lock()
         self._stop_event = Event()
-        self._worker = Thread(target=self._manage_loop)
+        self._worker = Thread(target=self._manage_loop, daemon=True)
         journal.send("wifi manager created for interface " + interface + " and hotspot gateway " + hotspot_ip)
         
     def __del__(self):

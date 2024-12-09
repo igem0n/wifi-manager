@@ -26,13 +26,6 @@ def create_app():
     app_config = readConfig()
     wifi = WifiManager(app_config["interface"], app_config["gateway"])
 
-    @app.teardown_appcontext
-    def cleanup(exception=None):
-        """Stop the wifi thread when the app shuts down."""
-        if wifi:
-            wifi.stop()
-
-
     @app.get("/wifi/available")
     def get_wifi_networks():
         """Return the cached Wi-Fi networks and signal levels."""
