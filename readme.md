@@ -82,6 +82,13 @@ pip install -r requirements.txt
 
 ```
 
+### !!! Important !!!
+Disable all the hotspot related services, they could brake NetworkManager functioning:
+```bash
+sudo systemctl disable hostapd.service
+sudo systemctl disable isc-dhcp-server.service
+```
+
 ### 4. Set Up the Systemd Service 
 Create a `systemd` service unit file to manage the Wi-Fi manager service. 
 - Create a new `wifi-manager.service` file in `/etc/systemd/system/`:
